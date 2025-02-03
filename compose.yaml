@@ -1,0 +1,31 @@
+version: '3.9'
+
+services:
+  backend:
+    container_name: backend
+    image: backend
+    build:
+      context: ./backend
+      dockerfile: backend.dockerfile
+    ports:
+      - 4000:4000
+    environment:
+      - DATABASE_URL=postgresql://carry_bee:buzzingaround@db:5432/carry_bee?schema=public
+    depends_on:
+      - db
+    restart: always
+  db:
+      container_name: db
+      image: postgres:17
+      restart: always
+      environment:
+        POSTGRES_USER: carry_bee
+        POSTGRES_PASSWORD: buzzingaround
+        POSTGRES_DB: carry_bee
+      ports:
+        - 5432:5432
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata: {}
