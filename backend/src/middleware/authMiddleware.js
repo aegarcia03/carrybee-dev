@@ -1,0 +1,1 @@
+// Handle all authentication between the server and the client

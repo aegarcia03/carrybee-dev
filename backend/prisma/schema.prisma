@@ -13,14 +13,136 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ParcelCategory {
+  SMALL
+  MEDIUM
+  LARGE
+  OTHER
+}
+
+enum OrderStatus {
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+}
+
+enum VehicleType {
+  MOTORBIKE
+  CAR
+  VAN
+  TRUCK
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+// MODELS
 model User {
-  id String @id @default(uuid()) 
+  id         String   @id @default(uuid())
   first_name String
-  last_name String
-  phone String @unique
-  email String @unique
-  password String
-  address String?
-  created_at DateTime @default(now()) 
+  last_name  String
+  phone      String   @unique
+  email      String   @unique
+  password   String
+  address    String?
+  orders     Order[] // One-to-Many Relationship with Order
+  reviews    Review[] // One-to-Many Relationship with Review
+  parcels    Parcel[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Order {
+  id                String        @id @default(uuid())
+  receiver_name     String
+  pickup_address    String
+  dropoff_address   String
+  pickup_latitude   Float
+  pickup_longitude  Float
+  dropoff_latitude  Float
+  dropoff_longitude Float
+  pickup_date       DateTime?
+  distance          Float?
+  total             Float
+  status            OrderStatus?
+  img_url           String?
+  user_id           String
+  user              User          @relation(fields: [user_id], references: [id])
+  parcel_id         String
+  parcel            Parcel        @relation(fields: [parcel_id], references: [id])
+  driver_id         String?
+  driver            Driver?       @relation(fields: [driver_id], references: [id])
+  payment           Payment?
+  review_id         String?       @unique
+  review            Review?       @relation(fields: [review_id], references: [id])
+  driverOrders      DriverOrder[]
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+}
+
+model Parcel {
+  id          String         @id @default(uuid())
+  item_name   String
+  category    ParcelCategory
+  quantity    Int?
+  weight      Float
+  width       Float? // Width in cm
+  length      Float? // Length in cm
+  height      Float? // Height in cm
+  description String?
+  user_id     String
+  user        User           @relation(fields: [user_id], references: [id])
+  orders      Order[]
+  updated_at  DateTime       @updatedAt
+}
+
+model Driver {
+  id           String        @id @default(uuid())
+  first_name   String
+  last_name    String
+  vehicle_type VehicleType
+  availability Boolean       @default(true)
+  orders       Order[]
+  reviews      Review[]
+  driverOrders DriverOrder[]
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+}
+
+model DriverOrder {
+  driver_id String
+  order_id  String
+  driver    Driver @relation(fields: [driver_id], references: [id])
+  order     Order  @relation(fields: [order_id], references: [id])
+
+  @@id([driver_id, order_id])
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  invoice_no     Int           @unique
+  total          Float
+  payment_method String
+  status         PaymentStatus
+  order          Order         @relation(fields: [order_id], references: [id])
+  order_id       String        @unique
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  rating     Int
+  comment    String
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+  driver_id  String
+  driver     Driver   @relation(fields: [driver_id], references: [id])
+  order      Order?
+  created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
