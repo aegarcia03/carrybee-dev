@@ -2,16 +2,14 @@ const express = require('express');
 const userController = require('../controllers/userController');
 const { authenticate } = require('../middleware/authMiddleware'); //add by phon
 const router = express.Router();
+const validate = require('../middleware/validator');
+const { registerSchema, loginSchema, updateSchema } = require('../validators/userValidator');
 
-router.post('/', userController.createUser);
-router.get('/:id', userController.getUserById);
-router.post('/api/users', userController.registerUser); // Register user
-//router.get('/users', userController.getAllUsers);
-//router.put('/users/:id', userController.updateUser);
-//router.delete('/users/:id', userController.deleteUser);
-router.post('/login', userController.loginUser);//add by phon
+router.get('/:email', userController.getUserByEmail);
+router.post('/', validate(registerSchema), userController.registerUser); // Register user
+router.post('/login', validate(loginSchema), userController.loginUser);
 router.get('/', authenticate, userController.getAllUsers); // Protect this route
-router.put('/:id', authenticate, userController.updateUser); // Protect this route
+router.put('/:id', authenticate, validate(updateSchema), userController.updateUser); // Protect this route
 router.delete('/:id', authenticate, userController.deleteUser); // Protect this route
 
 module.exports = router;

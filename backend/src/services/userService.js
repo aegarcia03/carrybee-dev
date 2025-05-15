@@ -1,6 +1,5 @@
 const prisma = require('../../prismaClient');
 const bcrypt = require('bcrypt');
-const validator = require('validator');
 const jwt = require('jsonwebtoken');
 
 const registerUser = async (req, res) => {
@@ -9,7 +8,6 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req) => {
   const { email, password } = req.body;
-
 
   // Retrieve user by email
   const user = await prisma.user.findUnique({ where: { email } });
@@ -34,22 +32,17 @@ const loginUser = async (req) => {
 // Create User
 const createUser = async (userData) => {
   try {
-    const { first_name, last_name, phone, email, password, address } = userData
+    const { first_name, last_name, phone, email, password, address } = userData;
+     // Use promise.all()
 
-    // Validate email format
-    if (!validator.isEmail(email)) {
-      throw new Error('Invalid email address');
-    }
-    // Check if email already exists
-    const existingUser = await prisma.user.findUnique({ where: { email }});
-    if (existingUser) {
-      throw new Error ('Email already registered');
-    }
-    // Check if phone number already exists
-    const existingPhone = await prisma.user.findUnique({ where: { phone }});
-    if (existingPhone) {
-      throw new Error ('Phone number already registered');
-    }
+    const [ existingUser, existingPhone ] = await Promise.all([
+      prisma.user.findUnique({ where: { email } }),
+      prisma.user.findUnique({ where: { phone } })
+    ]);
+
+    if (existingUser) throw new Error('Email already registered');
+    if (existingPhone) throw new Error ('Phone number already registered');
+ 
     //Encrypt the password
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await prisma.user.create({
@@ -69,10 +62,10 @@ const createUser = async (userData) => {
     }
 };
 
-// Get user by id
-const getUserById = async (id) => {
+// Get user by email
+const getUserByEmail = async (emai) => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: id, } });
+    const user = await prisma.user.findUnique({ where: { email: email, } });
     if (!user) {
       throw new Error('User not found');
     }
@@ -93,18 +86,17 @@ const getUserById = async (id) => {
   }
 };
 
-// Get All Users
+// Get all users
 const getAllUsers = async () => {
   try {
     const users = await prisma.user.findMany();
-    // Map through users to exclude passwords
     return users.map(({ password, ...userWithoutPassword }) => userWithoutPassword);
   } catch (error) {
     throw new Error('Failed to get all users');
   }
 };
-//add by phon end here
-// Update user
+
+
 const updateUser = async (id, updateData) => {
   try {
     const { first_name, last_name, phone, email, address } = updateData;
@@ -157,10 +149,10 @@ const deleteUser = async (id) => {
 
 module.exports = {
     createUser,
-    getUserById,
+    getUserByEmail,
     getAllUsers,
     updateUser,
     deleteUser,
-    registerUser,//add by phon
-    loginUser,//add by phon
+    registerUser,
+    loginUser,
   };

@@ -14,13 +14,13 @@ const reviewRoutes = require('./src/routes/reviewRoutes.js');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+app.use(express.json()); //middleware to parse Json requests
 app.use(
     cors({
       origin: "http://localhost:5173",
       credentials: true,
     })
 );// Middleware to allow cross-origin requests
-app.use(express.json()); //middleware to parse Json requests
 
 // Check if .env variables are loaded
 console.log('JWT_SECRET:', process.env.JWT_SECRET); 
@@ -44,6 +44,10 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoutes);
 
-//Server running
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong'});
+});
 
+//Server running
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

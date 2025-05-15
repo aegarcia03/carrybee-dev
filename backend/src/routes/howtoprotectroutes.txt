@@ -1,4 +1,0 @@
-read this: how to add authentication to make route protected
-router.get('/users', userController.getAllUsers); unprotected route
-router.get('/users', authenticate, userController.getAllUsers); protected route
-just add authenticate as above

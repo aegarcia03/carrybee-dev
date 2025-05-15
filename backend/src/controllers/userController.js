@@ -1,6 +1,5 @@
 const userService = require('../services/userService');
 
-//add by phon start here*************
 // Register User
 const registerUser = async (req, res) => {
   try {
@@ -11,57 +10,24 @@ const registerUser = async (req, res) => {
   }
 };
 
-// Login User
-// const loginUser = async (req, res) => {
-//   try {
-//     const token = await userService.loginUser(req, res);
-//     res.status(200).json({ token });
-//   } catch (error) {
-//     res.status(401).json({ error: error.message });
-//   }
-// };
-
-// const loginUser = async (req, res) => {
-//   try {
-//     const token = await userService.loginUser(req); // Pass only req
-//     res.status(200).json({ token });
-//   } catch (error) {
-//     res.status(401).json({ error: error.message });
-//   }
-// };
-
 const loginUser = async (req, res) => {
   try {
-    const { token, user } = await userService.loginUser(req); // Assume loginUser returns both
+    const { token, user } = await userService.loginUser(req.body); // Assume loginUser returns both
     res.status(200).json({ token, user });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }
 };
 
-//add by phon end here*************
-
-// Create User
-const createUser = async (req, res) => {
+//Get user by 
+const getUserByEmail = async (req, res) => {
   try {
-    const newUser = await userService.createUser(req.body);
-    res.status(201).json(newUser);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
-//Get user by Email
-
-const getUserById = async (req, res) => {
-  try {
-    const user = await userService.getUserById(req.params.id);
+    const user = await userService.getUserByEmail(req.params.email);
     res.status(200).json(user); // Ensure this is the modified user object
   } catch (error) {
     res.status(404).json({ error: error.message });
   }
 };
-
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -94,11 +60,10 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
-    createUser,
-    getUserById,
+    getUserByEmail,
     getAllUsers,
     updateUser,
     deleteUser,
-    registerUser,//add by phon
-    loginUser,//add by phon
+    registerUser,
+    loginUser,
   };

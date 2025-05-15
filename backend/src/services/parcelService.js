@@ -30,9 +30,6 @@ const createParcel = async (parcelData) => {
         user_id,
       },
     })
-    if (!item_name || !category || !quantity || !weight || !user_id) {
-      throw new Error('Required parcel data is missing.');
-  }
 
     const newParcel = await prisma.parcel.create({
       data: {
