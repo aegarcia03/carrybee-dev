@@ -1,7 +1,7 @@
 const express = require('express');
 const orderController = require('../controllers/orderController');
 const router = express.Router();
-const validate = require('../midleware/validator');
+const validate = require('../middleware/validator');
 const { createOrderSchema, updateOrderSchema } = require('../validators/orderValidator');
 
 
@@ -11,4 +11,4 @@ router.get('/', orderController.getAllOrders);
 router.put('/:id', validate(updateOrderSchema), orderController.updateOrder);
 router.delete('/:id', orderController.deleteOrder);
 
-module.exports = router;
+module.exports = router; 

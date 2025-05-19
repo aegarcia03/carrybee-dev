@@ -12,12 +12,13 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const { token, user } = await userService.loginUser(req.body); // Assume loginUser returns both
+    const { token, user } = await userService.loginUser(req); // Assume loginUser returns both
     res.status(200).json({ token, user });
-  } catch (error) {
-    res.status(401).json({ error: error.message });
-  }
+    } catch (error) {
+      res.status(401).json({ error: error.message });
+    }
 };
+  
 
 //Get user by 
 const getUserByEmail = async (req, res) => {
@@ -66,4 +67,4 @@ module.exports = {
     deleteUser,
     registerUser,
     loginUser,
-  };
+};

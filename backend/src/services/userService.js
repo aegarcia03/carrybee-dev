@@ -9,24 +9,53 @@ const registerUser = async (req, res) => {
 const loginUser = async (req) => {
   const { email, password } = req.body;
 
-  // Retrieve user by email
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    throw new Error('Invalid credentials');
-  }
+  const maxRetries = 3;
+  let attempt = 0;
 
-  // Generate JWT token with email included in the payload
-  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  console.log({ token, user });
-  return {
-    token,
-    user: {
-      id: user.id,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      email: user.email
+  while (attempt < maxRetries) {
+    try {
+      attempt++;
+
+      console.log(`🔄 Attempt ${attempt}: Looking up user ${email}`);
+
+      // ✅ Simulate a transient DB error
+      if (Math.random() < 0.7) {
+        throw new Error('Simulated DB connection error');
+      }
+            
+      // Retrieve user by email
+      const user = await prisma.user.findUnique({ where: { email } });
+      // Invalid login
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        throw new Error('Invalid credentials');
+      }
+      // Generate JWT token with email included in the payload
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      console.log('✅ Login successful');
+      return {
+        token,
+        user: {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email
+        }
+      };
+    } catch (error) {
+      console.error(`Attempt ${attempt} failed: ${error.message}`);
+      
+      // exit early on invalid credentials
+      if (error.message === 'Invalid credentials') {
+        throw error;
+      }
+      //Final attempr failed - bubble up
+      if (attempt >= maxRetries) {
+        throw new Error('Something went wrong. Please try again later.');
+      }
+      // optional delay before trying
+      await new Promise((res) => setTimeout(res, 500));
     }
-  };
+  }
 };
 
 // Create User
